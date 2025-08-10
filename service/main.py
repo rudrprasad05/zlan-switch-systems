@@ -1,12 +1,17 @@
+import os
 from pymodbus.client import ModbusTcpClient
 import struct
 import time
 import requests
+from dotenv import load_dotenv
+
+load_dotenv() 
 
 # --- CONFIGURATION ---
-ZLAN_IP = "192.168.8.201"
-PORT = 502
-METER_IDS = [1, 2]  # Slave IDs for each meter
+ZLAN_IP = os.getenv("ZLAN_IP")
+PORT = os.getenv("ZLAN_PORT")
+METER_IDS = [1, 2] 
+BACKEND_URL = os.getenv("BACKEND_URL")
 
 # Register addresses (Eastron SDM630)
 REGISTERS = {
@@ -62,7 +67,7 @@ try:
                 "energy": energy
             }
             try:
-                res = requests.post("http://localhost:8000/api/readings", json=data)
+                res = requests.post(f"{BACKEND_URL}/api/readings", json=data)
                 if res.status_code != 200:
                     print(f"❌ Failed to post data for meter {meter_id}")
             except Exception as e:
@@ -74,7 +79,7 @@ try:
             print(f"🎵 Frequency: {freq:.2f} Hz"   if freq else "❌ Frequency failed")
             print(f"🔋 Energy:    {energy:.3f} kWh" if energy else "❌ Energy failed")
 
-        time.sleep(60)
+        time.sleep(seconds=60)
 
 except KeyboardInterrupt:
     print("\n🛑 Logging stopped by user.")

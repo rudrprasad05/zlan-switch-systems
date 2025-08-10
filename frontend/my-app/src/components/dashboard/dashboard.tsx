@@ -38,6 +38,8 @@ import {
 import { Button } from "../ui/button";
 import NoData from "./NoData";
 import ValueCard, { ICardData } from "./ValueCard";
+import Header from "./Header";
+import { cn } from "@/lib/utils";
 
 interface MeterReading {
   timestamp: number;
@@ -55,11 +57,6 @@ interface MeterData {
     latest: MeterReading;
   };
 }
-
-// const data: ICardData[] = [
-//   { title: "Voltage", latest: {}, icon: Zap },
-//   { title: "Voltage", latest: {}, icon: Zap },
-// ];
 
 export default function Dashboard() {
   const [meterData, setMeterData] = useState<MeterData>({});
@@ -118,7 +115,7 @@ export default function Dashboard() {
     fetchData();
 
     // Set up interval for real-time updates
-    const interval = setInterval(fetchData, 5000);
+    const interval = setInterval(fetchData, 60_000);
 
     return () => clearInterval(interval);
   }, []);
@@ -161,43 +158,11 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Meter Monitoring Dashboard</h1>
-            <p className="text-muted-foreground">
-              Real-time electrical meter readings
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Badge
-              className="text-white"
-              variant={isConnected ? "default" : "destructive"}
-            >
-              {isConnected ? (
-                <>
-                  <Activity className="w-3 h-3 mr-1" /> Connected
-                </>
-              ) : (
-                <>
-                  <CloudOff className="w-3 h-3 mr-1" /> Disconnected
-                </>
-              )}
-            </Badge>
-            <Button
-              variant={"outline"}
-              className=""
-              onClick={() => fetchData()}
-            >
-              <RefreshCcw /> Refresh
-            </Button>
-            {lastUpdate && (
-              <p className="text-sm text-muted-foreground">
-                Last update: {lastUpdate.toLocaleTimeString()}
-              </p>
-            )}
-          </div>
-        </div>
+        <Header
+          isConnected={isConnected}
+          lastUpdate={lastUpdate}
+          fetchData={fetchData}
+        />
 
         {/* Meters Grid */}
         {Object.keys(memoizedMeterData).length === 0 ? (
@@ -206,40 +171,24 @@ export default function Dashboard() {
           <div className="grid gap-6">
             {Object.entries(memoizedMeterData).map(([meterId, data]) => (
               <div key={meterId} className="space-y-4">
-                <h2 className="text-2xl font-semibold">Meter {meterId}</h2>
+                <div className="flex gap-2 items-center">
+                  <div
+                    className={cn(
+                      "rounded-full w-3 h-3",
+                      isConnected ? "bg-green-500" : "bg-rose-500"
+                    )}
+                  />
+
+                  <h2 className="text-2xl font-semibold">Meter {meterId}</h2>
+                </div>
 
                 {/* Current Values Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                  <ValueCard
-                    data={{
-                      title: "Voltage",
-                      unit: { label: "V", value: data.latest.voltage },
-
-                      icon: Plug,
-                    }}
-                  />
-
-                  <ValueCard
-                    data={{
-                      title: "Current",
-                      unit: { label: "A", value: data.latest.current },
-                      icon: UtilityPole,
-                    }}
-                  />
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <ValueCard
                     data={{
                       title: "Power",
                       unit: { label: "W", value: data.latest.power },
                       icon: Zap,
-                    }}
-                  />
-
-                  <ValueCard
-                    data={{
-                      title: "Frequency",
-                      unit: { label: "Hz", value: data.latest.frequency },
-                      icon: AudioWaveform,
                     }}
                   />
 
@@ -253,91 +202,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Voltage Chart */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Voltage Over Time</CardTitle>
-                      <CardDescription>
-                        Real-time voltage readings
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer
-                        config={chartConfig}
-                        className="h-[300px]"
-                      >
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={data.readings}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis
-                              dataKey="formattedTime"
-                              tick={{ fontSize: 12 }}
-                              interval="preserveStartEnd"
-                            />
-                            <YAxis tick={{ fontSize: 12 }} />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Line
-                              type="monotone"
-                              dataKey="voltage"
-                              stroke="var(--color-voltage)"
-                              strokeWidth={2}
-                              dot={{
-                                fill: "var(--color-voltage)",
-                                strokeWidth: 2,
-                                r: 4,
-                              }}
-                              fill="var(--color-voltage)"
-                              fillOpacity={0.1}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
-
-                  {/* Current Chart */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Current Over Time</CardTitle>
-                      <CardDescription>
-                        Real-time current readings
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer
-                        config={chartConfig}
-                        className="h-[300px]"
-                      >
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={data.readings}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis
-                              dataKey="formattedTime"
-                              tick={{ fontSize: 12 }}
-                              interval="preserveStartEnd"
-                            />
-                            <YAxis tick={{ fontSize: 12 }} />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Line
-                              type="monotone"
-                              dataKey="current"
-                              stroke="var(--color-current)"
-                              strokeWidth={2}
-                              dot={{
-                                fill: "var(--color-current)",
-                                strokeWidth: 2,
-                                r: 4,
-                              }}
-                              fill="var(--color-current)"
-                              fillOpacity={0.1}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
-
+                <div className="w-full gap-6">
                   {/* Power Chart */}
                   <Card>
                     <CardHeader>
@@ -364,57 +229,15 @@ export default function Dashboard() {
                             <Line
                               type="monotone"
                               dataKey="power"
-                              stroke="var(--color-power)"
+                              stroke="#fff"
                               strokeWidth={2}
                               dot={{
-                                fill: "var(--color-power)",
+                                fill: "#fff",
                                 strokeWidth: 2,
                                 r: 4,
                               }}
-                              fill="var(--color-power)"
-                              fillOpacity={0.1}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
-
-                  {/* Frequency Chart */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Frequency Over Time</CardTitle>
-                      <CardDescription>
-                        Real-time frequency readings
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer
-                        config={chartConfig}
-                        className="h-[300px]"
-                      >
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={data.readings}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis
-                              dataKey="formattedTime"
-                              tick={{ fontSize: 12 }}
-                              interval="preserveStartEnd"
-                            />
-                            <YAxis tick={{ fontSize: 12 }} />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Line
-                              type="monotone"
-                              dataKey="frequency"
-                              stroke="var(--color-frequency)"
-                              strokeWidth={2}
-                              dot={{
-                                fill: "var(--color-frequency)",
-                                strokeWidth: 2,
-                                r: 4,
-                              }}
-                              fill="var(--color-frequency)"
-                              fillOpacity={0.1}
+                              fill="#fff"
+                              fillOpacity={0.3}
                             />
                           </LineChart>
                         </ResponsiveContainer>
