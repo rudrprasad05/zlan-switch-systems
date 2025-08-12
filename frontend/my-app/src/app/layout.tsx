@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
+import { AdminHeader } from "@/components/header/admin-header";
+import { AdminSidebar } from "@/components/sidebar/admin-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 export const metadata: Metadata = {
   title: "Switchboard Dashboard",
@@ -71,7 +74,15 @@ export default function RootLayout({
           defaultTheme="dark" // ✅ default to dark
           enableSystem={false} // ❌ don't follow OS preference
         >
-          {children}
+          <SidebarProvider defaultOpen={true}>
+            <div className="flex min-h-screen w-full bg-background">
+              <AdminSidebar />
+              <div className="flex-1 flex flex-col relative">
+                <AdminHeader />
+                <main className="flex-1 p-6">{children}</main>
+              </div>
+            </div>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

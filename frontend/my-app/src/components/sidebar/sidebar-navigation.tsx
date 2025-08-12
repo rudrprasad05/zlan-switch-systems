@@ -30,6 +30,11 @@ const navigationItems = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
+  {
+    title: "Reports",
+    href: "/reports",
+    icon: FileText,
+  },
 ];
 
 export function SidebarNavigation() {
