@@ -79,7 +79,7 @@ try:
             print(f"🎵 Frequency: {freq:.2f} Hz"   if freq else "❌ Frequency failed")
             print(f"🔋 Energy:    {energy:.3f} kWh" if energy else "❌ Energy failed")
 
-        time.sleep(seconds=60)
+        time.sleep(60)
 
 except KeyboardInterrupt:
     print("\n🛑 Logging stopped by user.")

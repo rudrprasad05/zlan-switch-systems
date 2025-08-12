@@ -214,7 +214,7 @@ export default function Dashboard() {
                     <CardContent>
                       <ChartContainer
                         config={chartConfig}
-                        className="h-[300px]"
+                        className="h-[300px] w-full"
                       >
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={data.readings}>
